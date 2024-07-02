@@ -1,4 +1,4 @@
-![[https://i.ibb.co/xLJxhd3/image.png]]
+![SNIFFMASTER Logo](https://i.ibb.co/xLJxhd3/image.png)
 
 # SNIFFMASTER - A Simple Network Sniffer
 
