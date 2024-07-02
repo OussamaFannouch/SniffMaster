@@ -89,7 +89,7 @@ def packet_handler(raw_data, filter_type, filter_value):
 
 def main(interface,filters_type,filters_value):
     ETH_P_ALL = 0x03 # Listen for everything
-    s = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.htons(ETH_P_ALL))
+    s=socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.htons(ETH_P_ALL))
     s.bind((interface,0))
     while True:
         raw_data, addr = s.recvfrom(65565)
