@@ -1,0 +1,6 @@
+# requirements.txt
+
+socket
+struct
+sys
+argparse
