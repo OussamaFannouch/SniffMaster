@@ -1,10 +1,17 @@
 #!/usr/bin/env python3
 import socket
+from threading import *
 import struct
 import sys
 import argparse
 from ethernet_tools import EthernetFrame, IPV4, UDP, TCP, hexdump
 from colors import *
+from collections import defaultdict
+import time
+
+
+scan_threshold = 20
+syn_pair_count = defaultdict(int)
 
 def menu():
     print(
@@ -36,6 +43,26 @@ def get_args():
     parser.add_argument('-f', '--filter', help="Filter by IP, port, or HTTP request, exemple of usage: ./mysnifer.py <interface > -f port:80", nargs='?')
     return parser.parse_args()
 
+def detect_nmap(src_ip,dst_ip):
+    pair = (src_ip, dst_ip)
+    syn_pair_count[pair] += 1
+    if syn_pair_count[pair] > scan_threshold:
+        readable_src_ip = socket.inet_ntoa(src_ip)
+        readable_dst_ip = socket.inet_ntoa(dst_ip)
+        print(red(f"Possible Nmap scan detected from {readable_src_ip}"))
+
+
+
+def reset_counts():
+    """Reset SYN counts periodically."""
+    while True:
+        time.sleep(scan_time_window)
+        syn_pair_count.clear()
+
+
+
+
+
 
 def packet_handler(raw_data, filter_type, filter_value):
         # Ethernet
@@ -45,6 +72,8 @@ def packet_handler(raw_data, filter_type, filter_value):
 # with filter option        
         if frame.ETHER_TYPE == IPV4.ID:
             ipv4 = IPV4(frame.PAYLOAD)
+            if ipv4.PROTOCOL == TCP.ID and ipv4.PAYLOAD[13] == 0x02:  # Check if it's a SYN packet
+                detect_nmap(ipv4.SOURCE,ipv4.DESTINATION)  # Call the Nmap detection logic
             if filter_type == 'ip':
                 if filter_value == ipv4.SOURCE or filter_value == ipv4.DESTINATION:
                     print(violet("└─ " + str(ipv4)))
@@ -89,7 +118,7 @@ def packet_handler(raw_data, filter_type, filter_value):
 
 def main(interface,filters_type,filters_value):
     ETH_P_ALL = 0x03 # Listen for everything
-    s=socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.htons(ETH_P_ALL))
+    s = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.htons(ETH_P_ALL))
     s.bind((interface,0))
     while True:
         raw_data, addr = s.recvfrom(65565)
@@ -140,6 +169,6 @@ if __name__ == "__main__":
             main(args.interface, filter_type, filter_value)
 
     except KeyboardInterrupt:
-        print("\n" + "Thanks for using our Sniffer! D1B loves you")
+        print("\n" + "Adios!")
 
 
