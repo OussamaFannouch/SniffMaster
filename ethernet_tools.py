@@ -14,10 +14,7 @@ class EthernetFrame:
         mac_dst , mac_src , ethertype = struct.unpack('! 6s 6s H',data[:14])
         return mac_dst,mac_src,ethertype,data[14:]
     def mac_to_str(self,data):
-        octects = []
-        for b in data:
-            octects.append(format(b,'02x'))
-        return ":".join(octects)
+        return ':'.join(format(b, '02x') for b in data)
     def __str__(self): # method used to define the string representation of an object
         ether = hex(self.ETHER_TYPE)
         trans = "UNKNOWN"
@@ -157,7 +154,7 @@ class TCP:
 
 
 
-def hexdump(bytes_input,left_padding=0,byte_width=32):
+def hexdump(bytes_input,left_padding=0,byte_width=64):
     current = 0
     end = len(bytes_input)
     result = ""
@@ -190,3 +187,4 @@ def hexdump(bytes_input,left_padding=0,byte_width=32):
         result += "\n"
         current += byte_width
     return result
+    
