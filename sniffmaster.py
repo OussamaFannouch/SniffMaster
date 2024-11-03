@@ -72,11 +72,21 @@ def packet_handler(raw_data, filter_type, filter_value):
 # with filter option        
         if frame.ETHER_TYPE == IPV4.ID:
             ipv4 = IPV4(frame.PAYLOAD)
+            print(violet("└─ " + str(ipv4)))
             if ipv4.PROTOCOL == TCP.ID and ipv4.PAYLOAD[13] == 0x02:  # Check if it's a SYN packet
                 detect_nmap(ipv4.SOURCE,ipv4.DESTINATION)  # Call the Nmap detection logic
             if filter_type == 'ip':
-                if filter_value == ipv4.SOURCE or filter_value == ipv4.DESTINATION:
-                    print(violet("└─ " + str(ipv4)))
+                if ipv4.PROTOCOL == UDP.ID:
+                    udp = UDP(ipv4.PAYLOAD)
+                    if filter_value == ipv4.SOURCE or filter_value == ipv4.DESTINATION:
+                        print(yellow("   └─ " + str(udp)))
+                        print(yellow(hexdump(udp.PAYLOAD, 5)))
+                elif ipv4.PROTOCOL == TCP.ID:
+                    tcp = TCP(ipv4.PAYLOAD)
+                    if filter_value == ipv4.SOURCE or filter_value == ipv4.DESTINATION:
+                        print(green_light("   └─ " + str(tcp)))
+                        print(green_light(hexdump(tcp.PAYLOAD, 5)))
+                
             elif filter_type == 'port':
                 if ipv4.PROTOCOL == UDP.ID:
                     udp = UDP(ipv4.PAYLOAD)
